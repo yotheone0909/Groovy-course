@@ -26,8 +26,6 @@ class PlacylistViewModelShould : BaseUnitTest() {
     private val expected = Result.success(playlist)
     private val exception = RuntimeException("Something went wrong")
 
-
-
     @Test
     fun getPlaylistFromRepository() = runBlockingTest {
         val viewModel = mockSuccessCase()
@@ -49,17 +47,6 @@ class PlacylistViewModelShould : BaseUnitTest() {
         assertEquals(exception, viewModel.playlist.getValueForTest()!!.exceptionOrNull())
     }
 
-    private suspend fun mockErrorCase(): PlaylistViewModel {
-        whenever(repository.getPlaylist())
-            .thenReturn(
-                flow {
-                    emit(Result.failure<List<Playlist>>(exception))
-                }
-            )
-        val viewModel = PlaylistViewModel(repository)
-        return viewModel
-    }
-
     @Test
     fun showSpinnerWhileLoading() = runBlockingTest {
         val viewModel = mockSuccessCase()
@@ -67,6 +54,28 @@ class PlacylistViewModelShould : BaseUnitTest() {
         viewModel.loader.captureValues {
             viewModel.playlist.getValueForTest()
             assertEquals(true, values[0])
+        }
+    }
+
+    @Test
+    fun closeLoaderAfterPlaylistLoad() = runBlockingTest {
+        val viewModel = mockSuccessCase()
+
+        viewModel.loader.captureValues {
+            viewModel.playlist.getValueForTest()
+
+            assertEquals(false, values.last())
+        }
+    }
+
+    @Test
+    fun closeLoaderAfterError() = runBlockingTest {
+        val viewModel = mockErrorCase()
+
+        viewModel.loader.captureValues {
+            viewModel.playlist.getValueForTest()
+
+            assertEquals(false, values.last())
         }
     }
 
@@ -78,6 +87,17 @@ class PlacylistViewModelShould : BaseUnitTest() {
                 }
             )
         }
+        return PlaylistViewModel(repository)
+    }
+
+
+    private suspend fun mockErrorCase(): PlaylistViewModel {
+        whenever(repository.getPlaylist())
+            .thenReturn(
+                flow {
+                    emit(Result.failure<List<Playlist>>(exception))
+                }
+            )
         return PlaylistViewModel(repository)
     }
 }

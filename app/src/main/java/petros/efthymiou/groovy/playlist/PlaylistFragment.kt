@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_item_list.*
+import kotlinx.android.synthetic.main.fragment_item_list.view.*
 import okhttp3.OkHttpClient
 import petros.efthymiou.groovy.R
 import retrofit2.Retrofit
@@ -41,13 +42,13 @@ class PlaylistFragment : Fragment() {
         viewModel.loader.observe(this as LifecycleOwner, Observer { loading ->
             when(loading) {
                 true -> loader.visibility = View.VISIBLE
-                else -> TODO()
+                else -> loader.visibility = View.GONE
             }
         })
 
         viewModel.playlist.observe(this as LifecycleOwner, Observer{ playlist ->
             if (playlist.getOrNull() != null) {
-                setupList(view, playlist.getOrNull()!!)
+                setupList(view.playlists_list, playlist.getOrNull()!!)
             }
         })
         return view
